@@ -1,26 +1,531 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@theme {
+  --color-*: initial;
+  --color-gris: #d9d7df;
+  --color-chair: #fff1f1;
+  --color-foret: #071714;
+  --color-sapin: #1a5148;
+  --color-sarcelle: #256b5f;
+  --color-chair-light: #fff7f7;
+  --color-gris-light: #e3e3e6;
+
+  --text-display: min(10.72vw, calc(48.318px + 1.0563vw), 4.2875rem);
+  --text-display--line-height: 0.93;
+  --text-name: min(7.6vw, calc(27.225px + 2.1549vw), 4.2875rem);
+  --text-name--line-height: 1;
+  --text-h3: min(5.08vw, calc(18.675px + 1.3451vw), 2.7813rem);
+  --text-h3--line-height: 1.1;
+  --text-role: min(4.28vw, calc(15.344px + 1.2113vw), 2.4125rem);
+  --text-role--line-height: 1.1;
+  --text-lead: max(1rem, min(3.6vw, calc(15.535px + 0.493vw), 1.5625rem));
+  --text-lead--line-height: 1.2;
+  --text-body: max(1rem, min(3.6vw, calc(17.296px + 0.1408vw), 1.25rem));
+  --text-body--line-height: 1.2;
+  --text-small: max(1rem, min(4vw, 1.25rem));
+  --text-small--line-height: 1.2;
+  --text-nav: min(4.44vw, calc(20.475px + 0.3451vw), 1.6938rem);
+  --text-nav--line-height: 1;
+  --text-label: max(1rem, min(3.6vw, calc(15.535px + 0.493vw), 1.5625rem));
+  --text-label--line-height: 1.2;
+  --text-cta: min(5vw, calc(22.218px + 0.5563vw), 2.0563rem);
+  --text-cta--line-height: 1.1;
+  --text-button: max(1rem, min(5vw, 1.5625rem));
+  --text-button--line-height: 1.2;
+  --text-action: max(1rem, min(3.6vw, calc(15.535px + 0.493vw), 1.5625rem));
+  --text-action--line-height: 1.2;
+  --text-footer: max(1rem, min(4.2vw, calc(19.592px + 0.2817vw), 1.5625rem));
+  --text-footer--line-height: 1.2;
+
+  --spacing-gutter: min(max(9vw, calc(-20.845px + 13.169vw)), 14.5rem);
+  --spacing-header: min(6.6vw, calc(24.9px + 1.6197vw), 3.5rem);
+
+  --spacing: 1px;
+
+  --radius-pill: 9999px;
+  --radius-card: 1.25rem;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-lato), ui-sans-serif, system-ui, sans-serif;
+  --font-italic: var(--font-lato-italic), var(--font-lato), ui-sans-serif, system-ui, sans-serif;
 }
 
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --spacing: min(calc(100vw / 500), 1px);
+    --header-h: calc(var(--spacing) * 170);
+  }
+
+  @media (width >= 64rem) {
+    :root {
+      --spacing: min(calc(100vw / 1920), 1px);
+      --header-h: calc(var(--spacing) * 160);
+      --header-gap: max(0.75rem, calc(var(--spacing) * 16));
+    }
+  }
+
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 1.5rem;
+  }
+
+  @media (width >= 64rem) {
+    html {
+      scroll-padding-top: calc(var(--header-h) + 1.5rem);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+
+    *,
+    ::before,
+    ::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
+  body {
+    @apply bg-chair font-sans text-foret antialiased;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@property --header-float {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 1;
+}
+
+@property --mask-fade-size {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 0px;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes fade-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes enter {
+  from {
+    opacity: 0;
+    translate: 0 calc(var(--spacing) * 10);
+  }
+}
+
+@keyframes reveal-up {
+  from {
+    mask-position: 0 0;
+    translate: 0 calc(var(--spacing) * 40);
+  }
+  to {
+    mask-position: 0 100%;
+  }
+}
+
+@keyframes reveal-left {
+  from {
+    mask-position: 0 0;
+    translate: calc(var(--spacing) * -60) 0;
+  }
+  to {
+    mask-position: 100% 0;
+  }
+}
+
+@keyframes reveal-wipe {
+  from {
+    opacity: 0;
+    clip-path: inset(0 22% 22% 0 round var(--reveal-radius, 0) 0 var(--reveal-radius, 0) 0);
+  }
+  to {
+    opacity: 1;
+    clip-path: inset(0 round var(--reveal-radius, 0) 0 var(--reveal-radius, 0) 0);
+  }
+}
+
+@keyframes reveal-draw {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    clip-path: inset(0);
+  }
+}
+
+@keyframes reveal-drop {
+  from {
+    opacity: 0;
+    transform: translateY(calc(var(--spacing) * -28));
+  }
+}
+
+@keyframes reveal-zoom {
+  from {
+    scale: 1.08;
+  }
+}
+
+@keyframes dot-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  45% {
+    opacity: 0.2;
+  }
+}
+
+@keyframes parallax-lag {
+  to {
+    translate: 0 var(--parallax-shift);
+  }
+}
+
+@keyframes part-rise {
+  from {
+    opacity: 0;
+    translate: 0 28px;
+  }
+}
+
+@keyframes part-drop {
+  from {
+    opacity: 0;
+    translate: 0 -36px;
+  }
+}
+
+@keyframes part-slide-in-left {
+  from {
+    opacity: 0;
+    translate: -32px 0;
+  }
+}
+
+@keyframes part-slide-in-right {
+  from {
+    opacity: 0;
+    translate: 32px 0;
+  }
+}
+
+@keyframes part-grow {
+  from {
+    opacity: 0;
+    scale: 0.6;
+  }
+}
+
+@keyframes header-detach {
+  from {
+    --header-float: 0;
+  }
+  to {
+    --header-float: 1;
+  }
+}
+
+@keyframes mask-fade-grow {
+  to {
+    --mask-fade-size: var(--mask-fade-max);
+  }
+}
+
+@keyframes drawer-slide-up {
+  from {
+    translate: 0 100%;
+  }
+}
+
+@keyframes drawer-slide-down {
+  to {
+    translate: 0 100%;
+  }
+}
+
+@keyframes privacy-title-open-from {
+  12%,
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes privacy-title-open-to {
+  from {
+    opacity: 0;
+  }
+  12% {
+    opacity: 1;
+  }
+}
+
+@keyframes privacy-title-close-from {
+  25% {
+    opacity: 1;
+  }
+  55%,
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes privacy-title-close-to {
+  from,
+  25% {
+    opacity: 0;
+  }
+  55% {
+    opacity: 1;
+  }
+}
+
+@utility underline-grow {
+  background-image: linear-gradient(currentColor, currentColor);
+  background-repeat: no-repeat;
+  background-position: 0 100%;
+  background-size: 0% 1px;
+  transition: background-size 250ms ease-out;
+
+  &:hover,
+  &:focus-visible {
+    background-size: 100% 1px;
+  }
+}
+
+@utility underline-shift {
+  text-decoration-line: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.15em;
+  transition:
+    text-underline-offset 200ms ease-out,
+    text-decoration-thickness 200ms ease-out;
+
+  &:hover {
+    text-decoration-thickness: 2px;
+    text-underline-offset: 0.28em;
+  }
+}
+
+@utility header-shell {
+  padding: calc(var(--header-gap) * var(--header-float));
+
+  @media (prefers-reduced-motion: no-preference) {
+    @supports (animation-timeline: scroll()) {
+      animation: header-detach linear both;
+      animation-timeline: scroll(root);
+      animation-range: 0 var(--header-h);
+    }
+  }
+}
+
+@utility header-card {
+  border-radius: calc(var(--radius-card) * var(--header-float));
+  padding-inline: calc(var(--spacing-header) - var(--header-gap) * var(--header-float));
+  padding-top: calc(var(--spacing) * 25 * (1 - var(--header-float)));
+  box-shadow: 0 calc(var(--spacing) * 12) calc(var(--spacing) * 36)
+    color-mix(in srgb, var(--color-foret) calc(14% * var(--header-float)), transparent);
+}
+
+@utility mask-fade-top {
+  mask-image: linear-gradient(to bottom, transparent, #000 var(--mask-fade-size));
+
+  @supports (animation-timeline: scroll()) {
+    animation: mask-fade-grow linear both;
+    animation-timeline: scroll(self);
+    animation-range: 0 var(--mask-fade-max);
+  }
+}
+
+@layer components {
+  @media (prefers-reduced-motion: no-preference) {
+    @supports (animation-timeline: view()) {
+      .reveal-up,
+      .reveal-left,
+      .reveal-wipe,
+      .reveal-draw,
+      .reveal-drop,
+      .reveal-zoom {
+        animation-timing-function: linear;
+        animation-fill-mode: both;
+        animation-timeline: view();
+        animation-range: entry 0% cover 24%;
+      }
+
+      .reveal-up {
+        mask-image: linear-gradient(to bottom, transparent, #000 50%);
+        mask-size: 100% 200%;
+        mask-repeat: no-repeat;
+        animation-name: reveal-up;
+      }
+
+      .reveal-left {
+        mask-image: linear-gradient(to right, transparent, #000 50%);
+        mask-size: 200% 100%;
+        mask-repeat: no-repeat;
+        animation-name: reveal-left;
+      }
+
+      .reveal-wipe {
+        animation-name: reveal-wipe;
+        animation-range: entry 0% entry 30%;
+      }
+
+      .reveal-draw {
+        animation-name: reveal-draw;
+        animation-range: entry 0% cover 28%;
+      }
+
+      .reveal-drop {
+        animation-name: reveal-drop;
+        animation-range: cover 0% cover 25%;
+      }
+
+      .reveal-zoom {
+        animation-name: reveal-zoom;
+        animation-range: entry 20% cover 60%;
+      }
+
+      .reveal-icon {
+        view-timeline-name: --service-icon;
+      }
+
+      .reveal-part {
+        transform-box: fill-box;
+        transform-origin: center;
+        animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+        animation-fill-mode: both;
+        animation-timeline: --service-icon;
+        animation-range: cover calc(10% + var(--i, 0) * 4%) cover calc(28% + var(--i, 0) * 4%);
+      }
+
+      .reveal-part[data-motion="rise"] {
+        animation-name: part-rise;
+      }
+
+      .reveal-part[data-motion="drop"] {
+        animation-name: part-drop;
+      }
+
+      .reveal-part[data-motion="slide-in-left"] {
+        animation-name: part-slide-in-left;
+      }
+
+      .reveal-part[data-motion="slide-in-right"] {
+        animation-name: part-slide-in-right;
+      }
+
+      .reveal-part[data-motion="grow"] {
+        animation-name: part-grow;
+      }
+    }
+
+    @supports (animation-timeline: scroll()) {
+      .parallax {
+        --parallax-shift: calc(var(--spacing) * 48);
+        animation: parallax-lag linear both;
+        animation-timeline: scroll(root);
+        animation-range: 0 100vh;
+      }
+    }
+
+    .reveal-intro {
+      animation: reveal-draw 1400ms cubic-bezier(0.65, 0, 0.35, 1) 200ms both;
+    }
+
+    .loading-dots > span {
+      animation: dot-pulse 1.2s ease-in-out infinite;
+    }
+
+    .loading-dots > span:nth-child(2) {
+      animation-delay: 150ms;
+    }
+
+    .loading-dots > span:nth-child(3) {
+      animation-delay: 300ms;
+    }
+
+    .enter {
+      animation: enter 220ms ease-out both;
+    }
+
+    [data-privacy-drawer] .privacy-drawer-body {
+      animation: enter 400ms ease-out 450ms both;
+    }
+  }
+}
+
+:root:not([data-privacy-open]) [data-privacy-source],
+:root[data-privacy-open] [data-privacy-drawer] [data-privacy-title] {
+  view-transition-name: privacy-title;
+}
+
+:root[data-privacy-open] [data-privacy-drawer] {
+  view-transition-name: privacy-drawer;
+}
+
+:root[data-privacy-open] [data-privacy-drawer] [data-slot="drawer-close"] {
+  view-transition-name: privacy-close;
+}
+
+::view-transition-new(privacy-drawer):only-child {
+  animation: drawer-slide-up 550ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+::view-transition-old(privacy-drawer):only-child {
+  animation: drawer-slide-down 400ms cubic-bezier(0.32, 0.72, 0, 1) both;
+}
+
+::view-transition-new(privacy-close):only-child {
+  animation: fade-in 250ms ease-out 300ms both;
+}
+
+::view-transition-old(privacy-close):only-child {
+  animation: fade-out 150ms ease-out both;
+}
+
+::view-transition-group(privacy-title) {
+  z-index: 1;
+  animation-duration: 550ms;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+::view-transition-old(privacy-title),
+::view-transition-new(privacy-title) {
+  inline-size: auto;
+  block-size: 100%;
+  animation-duration: 550ms;
+  animation-timing-function: linear;
+  animation-fill-mode: both;
+}
+
+:root[data-privacy-transition="opening"]::view-transition-old(privacy-title) {
+  animation-name: privacy-title-open-from;
+}
+
+:root[data-privacy-transition="opening"]::view-transition-new(privacy-title) {
+  animation-name: privacy-title-open-to;
+}
+
+:root[data-privacy-transition="closing"]::view-transition-old(privacy-title) {
+  animation-name: privacy-title-close-from;
+}
+
+:root[data-privacy-transition="closing"]::view-transition-new(privacy-title) {
+  inline-size: 100%;
+  block-size: auto;
+  animation-name: privacy-title-close-to;
 }
