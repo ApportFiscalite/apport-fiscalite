@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Lato } from "next/font/google";
 import { Footer } from "@/components/layout/Footer";
 import { Header } from "@/components/layout/Header";
@@ -31,6 +31,11 @@ export const metadata: Metadata = {
   openGraph: openGraph({ title: site.seo.title, description: site.seo.description, path: "/" }),
   twitter: { card: "summary_large_image" },
   formatDetection: { email: false, telephone: false, address: false },
+};
+
+export const viewport: Viewport = {
+  colorScheme: "only light",
+  themeColor: "#fff1f1",
 };
 
 export default function RootLayout({ children, modal }: LayoutProps<"/">) {

@@ -53,6 +53,7 @@
 
 @layer base {
   :root {
+    color-scheme: only light;
     --spacing: min(calc(100vw / 500), 1px);
     --header-h: calc(var(--spacing) * 170);
   }
