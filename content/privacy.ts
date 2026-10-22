@@ -51,7 +51,7 @@ export const privacyPolicy = {
           ...quotedEnglish("PCI compliant"),
           " (pour les données de cartes de crédit et bancaires).",
         ],
-        "Les copies des dossiers, lesquelles contiennent les données et renseignements recueillis, sont conservées sur des disques cryptés dans un tiroir-voûte respectant les normes minimales de la Chambre des notaires.",
+        "Les copies de sauvegarde, lesquelles contiennent les données et renseignements recueillis, sont conservées sur des disques cryptés dans un tiroir-voûte respectant les normes minimales de la Chambre des notaires.",
         "Les dossiers seront conservés au moins 10 ans à compter du dernier service professionnel rendu, en vertu de l’article 20 du Règlement sur la tenue des dossiers et des études des notaires.",
       ],
     },
