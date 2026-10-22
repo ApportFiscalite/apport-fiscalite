@@ -457,7 +457,8 @@
           animation-name: rise-in;
         }
 
-        .reveal-left {
+        .reveal-left,
+        .reveal-draw {
           animation-name: slide-in-left;
         }
 
