@@ -5,11 +5,14 @@ import { useEffect, useState } from "react";
 
 const activationLine = 0.35;
 
-function findActiveSection(ids: readonly string[]) {
-  const sections = ids
+function findSections(ids: readonly string[]) {
+  return ids
     .map((id) => document.getElementById(id))
     .filter((section) => section !== null)
     .filter((section) => section.getClientRects().length > 0);
+}
+
+function findActiveSection(sections: readonly HTMLElement[]) {
   if (sections.length === 0) return null;
 
   const scrolledToBottom =
@@ -25,18 +28,20 @@ export function useActiveSection(ids: readonly string[]) {
   const [activeId, setActiveId] = useState<string | null>(null);
 
   useEffect(() => {
-    let frame = 0;
-    const update = () => {
-      cancelAnimationFrame(frame);
-      frame = requestAnimationFrame(() => setActiveId(findActiveSection(ids)));
-    };
+    const sections = findSections(ids);
+    const update = () => setActiveId(findActiveSection(sections));
+
+    const observer = new IntersectionObserver(update, {
+      rootMargin: `0px 0px -${(1 - activationLine) * 100}% 0px`,
+    });
+    sections.forEach((section) => observer.observe(section));
 
     update();
-    window.addEventListener("scroll", update, { passive: true });
+    window.addEventListener("scrollend", update);
     window.addEventListener("resize", update);
     return () => {
-      cancelAnimationFrame(frame);
-      window.removeEventListener("scroll", update);
+      observer.disconnect();
+      window.removeEventListener("scrollend", update);
       window.removeEventListener("resize", update);
     };
   }, [ids, pathname]);
