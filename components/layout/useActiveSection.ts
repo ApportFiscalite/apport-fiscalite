@@ -38,11 +38,9 @@ export function useActiveSection(ids: readonly string[]) {
 
     update();
     window.addEventListener("scrollend", update);
-    window.addEventListener("resize", update);
     return () => {
       observer.disconnect();
       window.removeEventListener("scrollend", update);
-      window.removeEventListener("resize", update);
     };
   }, [ids, pathname]);
 
