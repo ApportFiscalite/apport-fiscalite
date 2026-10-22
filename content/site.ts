@@ -32,7 +32,7 @@ export const site = {
   hero: {
     titleLines: [["l’expertise fiscale", "accessible,"], ["sans compromis"]],
     intro:
-      "Apport Fiscalité est un cabinet de services conseils en fiscalité, fondé spécialement pour desservir une clientèle d’entrepreneurs et de PME du Québec.",
+      "Apport Fiscalité est un cabinet de services-conseils en fiscalité, fondé spécialement pour desservir une clientèle d’entrepreneurs et de PME du Québec.",
     cta: { label: "Découvrez nos services", href: "/#services" },
   },
 
