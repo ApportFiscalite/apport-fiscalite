@@ -475,6 +475,19 @@
           animation-timeline: view();
           animation-range: entry 0% cover 24%;
         }
+
+        :root[data-reveal-ready] :is(.reveal-up, .reveal-left, .reveal-draw, .reveal-wipe, .reveal-drop, .reveal-zoom, .reveal-icon) {
+          animation-timeline: auto;
+          animation-range: normal;
+          animation-duration: 700ms;
+          animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+          animation-fill-mode: both;
+          animation-play-state: paused;
+        }
+
+        :root[data-reveal-ready] :is(.reveal-up, .reveal-left, .reveal-draw, .reveal-wipe, .reveal-drop, .reveal-zoom, .reveal-icon)[data-revealed] {
+          animation-play-state: running;
+        }
       }
     }
 
@@ -484,6 +497,12 @@
         animation: parallax-lag linear both;
         animation-timeline: scroll(root);
         animation-range: 0 100vh;
+      }
+
+      @media (width < 64rem) {
+        .parallax {
+          animation: none;
+        }
       }
     }
 
