@@ -1,11 +1,20 @@
-import { Resend } from "resend";
+import { createTransport } from "nodemailer";
+import { site } from "@/content/site";
 import type { ContactAddresses, EmailTransport } from "./send";
 
-function createResendTransport(apiKey: string): EmailTransport {
-  const resend = new Resend(apiKey);
+const protonSmtp = {
+  host: "smtp.protonmail.ch",
+  port: 587,
+  requireTLS: true,
+  connectionTimeout: 10_000,
+  greetingTimeout: 10_000,
+  socketTimeout: 20_000,
+};
+
+function createProtonTransport(user: string, token: string): EmailTransport {
+  const smtp = createTransport({ ...protonSmtp, auth: { user, pass: token } });
   return async (message) => {
-    const { error } = await resend.emails.send(message);
-    if (error) throw new Error(`Resend rejected the email: ${error.name}`);
+    await smtp.sendMail(message);
   };
 }
 
@@ -14,19 +23,19 @@ const logTransport: EmailTransport = async (message) => {
 };
 
 const missingConfigurationTransport: EmailTransport = async () => {
-  throw new Error("RESEND_API_KEY, CONTACT_TO_EMAIL or CONTACT_FROM_EMAIL is not set");
+  throw new Error("SMTP_USER, SMTP_TOKEN or CONTACT_TO_EMAIL is not set");
 };
 
 export function contactTransportFromEnv(): { transport: EmailTransport; addresses: ContactAddresses } {
-  const apiKey = process.env.RESEND_API_KEY;
+  const user = process.env.SMTP_USER;
+  const token = process.env.SMTP_TOKEN;
   const to = process.env.CONTACT_TO_EMAIL;
-  const from = process.env.CONTACT_FROM_EMAIL;
 
-  if (apiKey && to && from) {
-    return { transport: createResendTransport(apiKey), addresses: { from, to } };
+  if (user && token && to) {
+    return { transport: createProtonTransport(user, token), addresses: { from: `"${site.name}" <${user}>`, to } };
   }
 
-  const placeholder = { from: from ?? "site@localhost", to: to ?? "info@localhost" };
+  const placeholder = { from: user ?? "site@localhost", to: to ?? "info@localhost" };
   if (process.env.NODE_ENV === "development") {
     return { transport: logTransport, addresses: placeholder };
   }
