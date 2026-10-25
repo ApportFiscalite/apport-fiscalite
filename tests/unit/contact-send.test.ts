@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { buildContactEmail, sendContactEmail } from "@/lib/contact/send";
 
-const addresses = { from: "site@mail.example.com", to: "info@example.com" };
+const addresses = { from: "\"Apport Fiscalité\" <formulaire@example.com>", to: "info@example.com" };
 
 const input = {
   firstName: "Marie",
