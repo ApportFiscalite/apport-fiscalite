@@ -2,7 +2,7 @@ import type { z } from "zod";
 import { site } from "@/content/site";
 import { contactFields, type ContactField } from "./fields";
 import { contactSchema } from "./schema";
-import { sendContactEmail, type ContactAddresses, type EmailTransport } from "./send";
+import { sendConfirmationEmail, sendContactEmail, type ContactAddresses, type EmailTransport } from "./send";
 import { honeypotField, startedAtField, type ContactState, type ContactValues } from "./state";
 
 export const minimumFillTimeMs = 1500;
@@ -11,6 +11,7 @@ export type ContactDependencies = {
   transport: EmailTransport;
   addresses: ContactAddresses;
   now: number;
+  defer: (task: () => Promise<void>) => void;
 };
 
 function readText(formData: FormData, name: string) {
@@ -34,9 +35,17 @@ function firstErrorPerField(error: z.ZodError) {
   return fieldErrors;
 }
 
+async function sendConfirmationSafely(visitorEmail: string, transport: EmailTransport, addresses: ContactAddresses) {
+  try {
+    await sendConfirmationEmail(visitorEmail, transport, addresses);
+  } catch (error) {
+    console.error("Contact confirmation could not be sent", error);
+  }
+}
+
 export async function handleContactSubmission(
   formData: FormData,
-  { transport, addresses, now }: ContactDependencies,
+  { transport, addresses, now, defer }: ContactDependencies,
 ): Promise<ContactState> {
   const { messages } = site.contact;
 
@@ -58,9 +67,11 @@ export async function handleContactSubmission(
 
   try {
     await sendContactEmail(parsed.data, transport, addresses);
-    return { status: "success" };
   } catch (error) {
     console.error("Contact email could not be sent", error);
     return { status: "error", message: messages.failure, values };
   }
+
+  defer(() => sendConfirmationSafely(parsed.data.email, transport, addresses));
+  return { status: "success" };
 }

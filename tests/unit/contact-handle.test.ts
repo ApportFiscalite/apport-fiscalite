@@ -1,14 +1,14 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { site } from "@/content/site";
 import { handleContactSubmission, minimumFillTimeMs } from "@/lib/contact/handle";
-import type { EmailTransport } from "@/lib/contact/send";
+import { buildConfirmationEmail, type EmailMessage, type EmailTransport } from "@/lib/contact/send";
 import { honeypotField, startedAtField } from "@/lib/contact/state";
 
 const { messages } = site.contact;
 
 const now = 1_800_000_000_000;
 
-const addresses = { from: "site@mail.example.com", to: "info@example.com" };
+const addresses = { from: "\"Apport Fiscalité\" <formulaire@example.com>", to: "info@example.com" };
 
 const validFields = {
   firstName: "Marie",
@@ -23,8 +23,18 @@ function formData(fields: Record<string, string>) {
   return data;
 }
 
-function submit(fields: Record<string, string>, transport: EmailTransport = vi.fn(async () => {})) {
-  return handleContactSubmission(formData(fields), { transport, addresses, now });
+function createTransport() {
+  return vi.fn<(message: EmailMessage) => Promise<void>>(async () => {});
+}
+
+async function submit(fields: Record<string, string>, transport: EmailTransport = createTransport()) {
+  const deferred: Promise<void>[] = [];
+  const defer = (task: () => Promise<void>) => {
+    deferred.push(task());
+  };
+  const state = await handleContactSubmission(formData(fields), { transport, addresses, now, defer });
+  await Promise.all(deferred);
+  return state;
 }
 
 afterEach(() => {
@@ -32,35 +42,55 @@ afterEach(() => {
 });
 
 describe("handleContactSubmission", () => {
-  it("sends a valid submission and reports success", async () => {
-    const transport = vi.fn(async () => {});
+  it("sends the firm's email, then the visitor's confirmation, and reports success", async () => {
+    const transport = createTransport();
     const state = await submit({ ...validFields, [startedAtField]: String(now - 10_000) }, transport);
     expect(state).toEqual({ status: "success" });
+    expect(transport).toHaveBeenCalledTimes(2);
+    expect(transport.mock.calls[0][0].to).toBe(addresses.to);
+    expect(transport.mock.calls[1][0]).toEqual(buildConfirmationEmail(validFields.email, addresses));
+  });
+
+  it("reports success before the confirmation is sent", async () => {
+    const transport = createTransport();
+    const tasks: (() => Promise<void>)[] = [];
+    const state = await handleContactSubmission(formData(validFields), {
+      transport,
+      addresses,
+      now,
+      defer: (task) => {
+        tasks.push(task);
+      },
+    });
+    expect(state).toEqual({ status: "success" });
     expect(transport).toHaveBeenCalledOnce();
+    expect(tasks).toHaveLength(1);
+    await tasks[0]();
+    expect(transport).toHaveBeenCalledTimes(2);
   });
 
   it("accepts a submission without a start time, as sent without JavaScript", async () => {
-    const transport = vi.fn(async () => {});
+    const transport = createTransport();
     expect(await submit(validFields, transport)).toEqual({ status: "success" });
-    expect(transport).toHaveBeenCalledOnce();
+    expect(transport).toHaveBeenCalledTimes(2);
   });
 
   it("pretends to succeed and sends nothing when the honeypot is filled", async () => {
-    const transport = vi.fn(async () => {});
+    const transport = createTransport();
     const state = await submit({ ...validFields, [honeypotField]: "https://spam.example" }, transport);
     expect(state).toEqual({ status: "success" });
     expect(transport).not.toHaveBeenCalled();
   });
 
   it("pretends to succeed and sends nothing when the form was filled too fast", async () => {
-    const transport = vi.fn(async () => {});
+    const transport = createTransport();
     const state = await submit({ ...validFields, [startedAtField]: String(now - minimumFillTimeMs + 1) }, transport);
     expect(state).toEqual({ status: "success" });
     expect(transport).not.toHaveBeenCalled();
   });
 
   it("returns field errors and the submitted values when validation fails", async () => {
-    const transport = vi.fn(async () => {});
+    const transport = createTransport();
     const state = await submit({ ...validFields, firstName: "", email: "pas-un-courriel" }, transport);
     expect(state).toEqual({
       status: "error",
@@ -80,7 +110,7 @@ describe("handleContactSubmission", () => {
     });
   });
 
-  it("returns a generic message, without provider details, when sending fails", async () => {
+  it("returns a generic message and skips the confirmation when the firm's email fails", async () => {
     vi.spyOn(console, "error").mockImplementation(() => {});
     const transport = vi.fn(async () => {
       throw new Error("provider secret detail");
@@ -88,5 +118,16 @@ describe("handleContactSubmission", () => {
     const state = await submit(validFields, transport);
     expect(state).toEqual({ status: "error", message: messages.failure, values: validFields });
     expect(JSON.stringify(state)).not.toContain("provider secret detail");
+    expect(transport).toHaveBeenCalledOnce();
+  });
+
+  it("still reports success and logs it when only the confirmation fails", async () => {
+    const error = vi.spyOn(console, "error").mockImplementation(() => {});
+    const transport = createTransport();
+    transport.mockResolvedValueOnce().mockRejectedValueOnce(new Error("Invalid login: 535"));
+    const state = await submit(validFields, transport);
+    expect(state).toEqual({ status: "success" });
+    expect(transport).toHaveBeenCalledTimes(2);
+    expect(error).toHaveBeenCalledWith("Contact confirmation could not be sent", expect.any(Error));
   });
 });
