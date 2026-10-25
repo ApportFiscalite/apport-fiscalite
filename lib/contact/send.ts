@@ -43,13 +43,13 @@ export function buildContactEmail(input: ContactInput, addresses: ContactAddress
 }
 
 export function buildConfirmationEmail(visitorEmail: string, addresses: ContactAddresses): EmailMessage {
-  const { subject, paragraphs, signature } = site.contact.confirmation;
+  const { subject, paragraphs } = site.contact.confirmation;
   return {
     from: addresses.from,
     to: visitorEmail,
     replyTo: addresses.to,
     subject,
-    text: `${paragraphs.join("\n\n")}\n\n--\n${signature}`,
+    text: paragraphs.join("\n\n"),
   };
 }
 

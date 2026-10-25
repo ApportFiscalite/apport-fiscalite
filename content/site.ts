@@ -133,7 +133,6 @@ export const site = {
         'Nous avons bien reçu votre message et nous entrerons en contact avec vous dès que possible. Nous nous efforçons de donner suite à toute demande dans un délai de 72 heures ouvrables.',
         'Ceci est un message automatisé.',
       ],
-      signature: 'Philippe Émile Gauthier',
     },
   },
 
