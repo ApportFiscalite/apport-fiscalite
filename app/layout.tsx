@@ -2,7 +2,6 @@ import type { Metadata, Viewport } from "next";
 import { Lato } from "next/font/google";
 import { Footer } from "@/components/layout/Footer";
 import { Header } from "@/components/layout/Header";
-import { RevealObserver } from "@/components/layout/RevealObserver";
 import { SkipLink } from "@/components/layout/SkipLink";
 import { site } from "@/content/site";
 import { openGraph, siteUrl } from "@/lib/seo";
@@ -53,7 +52,6 @@ export default function RootLayout({ children, modal }: LayoutProps<"/">) {
         </main>
         <Footer />
         {modal}
-        <RevealObserver />
       </body>
     </html>
   );
